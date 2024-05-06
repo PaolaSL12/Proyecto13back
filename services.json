@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Manicura Spa con esmaltado",
+    "description": "Experimenta un lujo total con esta manicura que incluye corte, limado, tratamiento de cutículas, exfoliación, masaje relajante y un acabado impecable con esmalte de tu elección.",
+    "duration": "4"
+  },
+  {
+    "name": "Manicura Semipermanente",
+    "description": "Disfruta de uñas impecables durante semanas con este esmalte de larga duración, aplicado profesionalmente y curado con luz UV para un brillo duradero sin astillarse.",
+    "duration": "4"
+  },
+  {
+    "name": "Manicura Semipermanente con Nivelacion",
+    "description": "Obtén un resultado perfectamente nivelado y duradero con esta manicura que incluye la aplicación de esmalte semipermanente junto con una nivelación experta de la superficie de la uña.",
+    "duration": "6"
+  },
+  {
+    "name": "Extensiones Gel X",
+    "description": "Consigue unas uñas largas y elegantes con las extensiones Gel X, esculpidas con precisión utilizando puntas preformadas y gel de alta calidad para un aspecto natural y duradero.",
+    "duration": "4"
+  },
+  {
+    "name": "Extensiones Gel sin Limado",
+    "description": "Añade longitud y resistencia a tus uñas sin dañar la superficie natural con estas extensiones de gel aplicadas sin limado, para un resultado seguro y sin preocupaciones.",
+    "duration": "4"
+  },
+  {
+    "name": "Extensiones PolyGel",
+    "description": "Experimenta la última innovación en extensiones de uñas con PolyGel, un material versátil que combina la durabilidad del acrílico con la facilidad de aplicación del gel, para unas uñas fuertes y hermosas.",
+    "duration": "4"
+  },
+  {
+    "name": "Pedicura Spa",
+    "description": "Date el placer de una experiencia relajante y rejuvenecedora para tus pies con esta pedicura que incluye remojo, eliminación de durezas, exfoliación, masaje y un acabado impecable con esmalte de uñas.",
+    "duration": "6"
+  }
+]
