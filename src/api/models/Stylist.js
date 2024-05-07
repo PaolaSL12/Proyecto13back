@@ -4,14 +4,16 @@ const Schema = mongoose.Schema;
 const stylistSchema = new Schema(
   {
     name: { type: String, required: true },
-    availability: [
-      {
-        day: { type: String, required: true },
-        start_time: { type: String, required: true }, 
-        end_time: { type: String, required: true },
-        available: { type: Boolean, default: true } 
-      }
-    ]
+    workSchedule: [{
+      day: { type: String, required: true },
+      timeSlots: [{
+        startTime: { type: String, required: true },
+        endTime: { type: String, required: true }
+      }]
+    }],
+    daysOff: [{ type: String, required: true }],
+    available: { type: Boolean, default: true },
+    appointments: [{ type: Schema.Types.ObjectId, ref: 'appointments' }]
   },
   {
     timestamps: true,
@@ -20,10 +22,8 @@ const stylistSchema = new Schema(
 );
 
 stylistSchema.methods.markAvailable = function(date, startTime, endTime) {
-  const slot = this.availability.find(slot => slot.day === date && slot.start_time === startTime && slot.end_time === endTime);
-  if (slot) {
-    slot.available = true;
-  }
+  const slot = this.workSchedule.find(slot => slot.day === date && slot.startTime <= startTime && slot.endTime >= endTime && !this.daysOff.includes(date));
+  return !!slot;
 };
 
 const Stylist = mongoose.model("stylists", stylistSchema, "stylists");

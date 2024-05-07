@@ -1,31 +1,34 @@
 const fs = require('fs');
 const csv = require('csv-parser');
 const Service = require('../../../api/models/Service');
-const { default: mongoose } = require('mongoose');
+const mongoose = require('mongoose');
+require("dotenv").config();
 
-const services = [];
+const uri = process.env.DB_URL;
 
-fs.createReadStream('src/utils/Seeds/services/services.csv')
-  .pipe(csv())
-  .on('data', (data) => services.push(data))
-  .on('end', () => {
-    fs.writeFile('services.json', JSON.stringify(services, null, 2), (err) => {
-      if (err) {
-        console.error('Error al escribir el archivo JSON:', err);
-        return;
-      }
-      console.log('Archivo JSON creado exitosamente.');
-    });
-  });
+console.log(uri);
 
-  const serviceDocuments = services.map(service => new Service(service));
-
-mongoose
-.connect('mongodb://localhost:27017/Proyecto13')
+mongoose.connect(uri)
 .then(async () => {
+  console.log('Conexión a MongoDB Atlas exitosa');
 
-  await Service.insertMany(serviceDocuments);
+  const services = [];
+  fs.createReadStream('src/utils/Seeds/services/services.csv')
+    .pipe(csv())
+    .on('data', (data) => services.push(data))
+    .on('end', async () => {
+      try {
+        const serviceDocuments = services.map(service => new Service(service));
+
+        await Service.insertMany(serviceDocuments);
+        console.log('Datos insertados exitosamente.');
+      } catch (error) {
+        console.error('Error al insertar datos:', error);
+      } finally {
+        mongoose.disconnect();
+      }
+    });
 })
-.catch((err) => console.log(`Error creating data: ${err}`))
-
-.finally(() => mongoose.disconnect());
+.catch((err) => {
+  console.error('Error al conectar a MongoDB Atlas:', err);
+});

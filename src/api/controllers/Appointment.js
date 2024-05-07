@@ -4,6 +4,7 @@ const Service = require("../models/Service");
 const Stylist = require("../models/Stylist");
 const calculateEndTime = require("../../utils/calculateEndTime");
 const User = require("../models/User");
+const isAviable = require("../../utils/isAviable");
 
 
 const getAppointments = async (req, res, next) => {
@@ -47,23 +48,24 @@ const createAppointment = async (req, res, next) => {
       return res.status(404).json({ error: 'Estilista no encontrado' });
     }
 
+    const isStylistAvailable = isAviable(stylistObj, formattedDate, startTime, endTime);
+
     const isIntervalAvailable = await Appointment.findOne({
       stylist: stylist,
       date: formattedDate,
       $or: [
-        { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
-        { startTime: { $eq: endTime }, endTime: { $gt: startTime } }
+        { startTime: { $lt: startTime }, endTime: { $gt: startTime } }
       ]
     });
 
-    if (!isIntervalAvailable) {
-      stylistObj.availability.push({
-        day: formattedDate,
-        start_time: startTime,
-        end_time: endTime,
-        available: false
+    if (isStylistAvailable && !isIntervalAvailable) {
+
+      stylistObj.workSchedule.forEach(schedule => {
+        if (schedule.day === formattedDate) {
+          schedule.timeSlots.push({ startTime, endTime });
+        }
       });
-      await stylistObj.save();
+      stylistObj.available = false;
 
       const newAppointment = new Appointment({
         date: formattedDate,
@@ -73,6 +75,10 @@ const createAppointment = async (req, res, next) => {
         service: service._id, 
         stylist
       });
+
+      stylistObj.appointments.push(newAppointment._id);
+
+      await stylistObj.save();
 
       const appointmentSave = await newAppointment.save();
 
@@ -104,7 +110,8 @@ const deleteAppointment = async (req, res, next) => {
       return res.status(404).json({ message: "El estilista no se encontró" });
     }
 
-    stylist.markAvailable(appointment.date, appointment.startTime, appointment.endTime);
+    stylist.appointments.pull(id);
+
     await stylist.save();
 
     const deletedAppointment = await Appointment.findByIdAndDelete(id);
