@@ -9,8 +9,6 @@ const cors = require('cors');
 const multer = require("multer");
 
 
-
-
 const upload = multer();
 const app = express();
 
