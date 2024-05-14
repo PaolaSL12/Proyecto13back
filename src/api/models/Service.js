@@ -6,7 +6,8 @@ const serviceSchema = new Schema(
   {
     name: { type: String, required: true },
     description: { type: String, required: true }, 
-    duration: { type: Number, required: true }
+    duration: { type: Number, required: true }, 
+    img: { type: String, required: true }
   },
   {
     timestamps: true,

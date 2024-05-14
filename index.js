@@ -5,12 +5,21 @@ const stylistsRouter = require("./src/api/routes/Stylist");
 const servicesRouter = require("./src/api/routes/Service");
 const usersRouter = require("./src/api/routes/User");
 const appointmentRouter = require("./src/api/routes/Appointment");
+const cors = require('cors');
+const multer = require("multer");
 
+
+
+
+const upload = multer();
 const app = express();
 
 connectDB();
 
 app.use(express.json())
+app.use(cors())
+app.use(upload.none());
+
 
 app.use("/api/stylist", stylistsRouter);
 app.use("/api/service", servicesRouter);
