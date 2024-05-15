@@ -4,7 +4,7 @@ const Service = require("../models/Service");
 const Stylist = require("../models/Stylist");
 const calculateEndTime = require("../../utils/calculateEndTime");
 const User = require("../models/User");
-const isAviable = require("../../utils/isAviable");
+const isAvailable = require("../../utils/isAviable");
 
 
 const getAppointments = async (req, res, next) => {
@@ -27,6 +27,24 @@ const getAppointmentById = async (req, res, next) => {
   }
 };
 
+const getAppointmentByDate = async (req, res, next) => {
+  try {
+    const { day, month, year } = req.params;
+    const formattedDate = `${day}/${month}/${year}`;
+    const appointments = await Appointment.find({ date: formattedDate });
+
+    if (appointments.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron citas para esta fecha' });
+    }
+
+    return res.status(200).json(appointments);
+  } catch (error) {
+    console.error('Error al obtener citas por fecha:', error);
+    return res.status(500).json({ message: 'Error interno del servidor' });
+  }
+}
+
+
 const createAppointment = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -35,62 +53,64 @@ const createAppointment = async (req, res, next) => {
     const formattedDate = moment(date, 'DD/MM/YYYY').format('DD/MM/YYYY');
 
     const service = await Service.findById(serviceId);
+    const stylistObj = await Stylist.findById(stylist);
 
-    if (!service) {
-      return res.status(404).json({ error: 'Servicio no encontrado' });
+    if (!service || !stylistObj) {
+      return res.status(404).json({ error: 'Servicio o estilista no encontrado' });
     }
 
     const endTime = calculateEndTime(startTime, service.duration);
 
-    const stylistObj = await Stylist.findById(stylist);
+    const isIntervalAvailable = isAvailable(stylistObj, formattedDate, startTime, endTime);
 
-    if (!stylistObj) {
-      return res.status(404).json({ error: 'Estilista no encontrado' });
+    if (!isIntervalAvailable) {
+      return res.status(400).json({ error: 'El intervalo de tiempo no está disponible' });
     }
 
-    const isStylistAvailable = isAviable(stylistObj, formattedDate, startTime, endTime);
+    const endTimeWithBuffer = moment(endTime, 'HH:mm').add(service.duration, 'minutes');
 
-    const isIntervalAvailable = await Appointment.findOne({
+    const isStylistAvailable = await Appointment.findOne({
       stylist: stylist,
       date: formattedDate,
       $or: [
-        { startTime: { $lt: startTime }, endTime: { $gt: startTime } }
+        { $and: [
+            { startTime: { $lt: endTimeWithBuffer.format('HH:mm') } },
+            { endTime: { $gt: startTime } }
+          ]
+        }
       ]
     });
-
-    if (isStylistAvailable && !isIntervalAvailable) {
-
-      stylistObj.workSchedule.forEach(schedule => {
-        if (schedule.day === formattedDate) {
-          schedule.timeSlots.push({ startTime, endTime });
-        }
-      });
-      stylistObj.available = false;
-
-      const newAppointment = new Appointment({
-        date: formattedDate,
-        startTime,
-        endTime,
-        user: userId,
-        service: service._id, 
-        stylist
-      });
-
-      stylistObj.appointments.push(newAppointment._id);
-
-      await stylistObj.save();
-
-      const appointmentSave = await newAppointment.save();
-
-      await User.findByIdAndUpdate(userId, { $push: { appointments: appointmentSave._id } });
-      
-      return res.status(201).json(appointmentSave);
-    } else {
-      return res.status(400).json({ error: 'El intervalo de tiempo no está disponible' });
+    
+    if (isStylistAvailable) {
+      return res.status(420).json({ error: 'El estilista no está disponible para este horario' });
     }
+
+    stylistObj.workSchedule.forEach(schedule => {
+      if (schedule.day === formattedDate) {
+        schedule.timeSlots.push({ startTime, endTime });
+      }
+    });
+    stylistObj.available = false;
+
+    const newAppointment = new Appointment({
+      date: formattedDate,
+      startTime,
+      endTime,
+      user: userId,
+      service: service._id, 
+      stylist
+    });
+
+    stylistObj.appointments.push(newAppointment._id);
+
+    await stylistObj.save();
+    const appointmentSave = await newAppointment.save();
+    await User.findByIdAndUpdate(userId, { $push: { appointments: appointmentSave._id } });
+    
+    return res.status(201).json(appointmentSave);
   } catch (error) {
     console.error(error);
-    return res.status(400).json("Error en la solicitud");
+    return res.status(500).json("Error en la solicitud");
   }
 };
 
@@ -130,4 +150,5 @@ module.exports = {
   getAppointmentById,
   createAppointment,
   deleteAppointment,
+  getAppointmentByDate
 };

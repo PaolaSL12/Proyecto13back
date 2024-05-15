@@ -5,7 +5,7 @@ const getDayOfWeek = (dateString) => {
     return date.format('dddd');
   };
   
-  const isAviable = (stylist, date, startTime, endTime) => {
+  const isAvailable = (stylist, date, startTime, endTime) => {
     const dayOfWeek = getDayOfWeek(date);
     const schedule = stylist.workSchedule.find(s => s.day === dayOfWeek);
     if (!schedule) {
@@ -21,4 +21,4 @@ const getDayOfWeek = (dateString) => {
     return true; 
   };
 
-  module.exports = isAviable
+  module.exports = isAvailable
