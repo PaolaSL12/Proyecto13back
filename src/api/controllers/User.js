@@ -1,4 +1,4 @@
-const { generateToken } = require("../../utils/jwt");
+const { generateToken } = require("../../utils/seed/functions/jwt");
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 

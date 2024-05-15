@@ -17,7 +17,7 @@ mongoose
       await Stylist.deleteMany();
 
       const stylists = [];
-      fs.createReadStream("src/utils/Seeds/Stylists/stylists.csv")
+      fs.createReadStream("src/utils/seed/Stylists/stylists.csv")
         .pipe(csv())
         .on("data", (data) => stylists.push(data))
         .on("end", async () => {

@@ -2,9 +2,9 @@ const Appointment = require("../models/Appointment");
 const moment = require('moment');
 const Service = require("../models/Service");
 const Stylist = require("../models/Stylist");
-const calculateEndTime = require("../../utils/calculateEndTime");
+const calculateEndTime = require("../../utils/seed/functions/calculateEndTime");
 const User = require("../models/User");
-const isAvailable = require("../../utils/isAviable");
+const isAvailable = require("../../utils/seed/functions/isAviable");
 
 
 const getAppointments = async (req, res, next) => {

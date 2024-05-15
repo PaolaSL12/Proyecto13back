@@ -17,7 +17,7 @@ mongoose.connect(uri)
     console.log('Datos eliminados exitosamente.');
 
     const services = [];
-    fs.createReadStream('src/utils/Seeds/services/services.csv')
+    fs.createReadStream('src/utils/seed/services/services.csv')
       .pipe(csv())
       .on('data', (data) => services.push(data))
       .on('end', async () => {
