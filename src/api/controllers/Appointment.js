@@ -2,9 +2,9 @@ const Appointment = require("../models/Appointment");
 const moment = require('moment');
 const Service = require("../models/Service");
 const Stylist = require("../models/Stylist");
-const calculateEndTime = require("../../utils/seed/functions/calculateEndTime");
 const User = require("../models/User");
-const isAvailable = require("../../utils/seed/functions/isAviable");
+const isAvailable = require("../../utils/functions/isAviable");
+const calculateEndTime = require("../../utils/functions/calculateEndTime");
 
 
 const getAppointments = async (req, res, next) => {
@@ -31,7 +31,7 @@ const getAppointmentByDate = async (req, res, next) => {
   try {
     const { day, month, year } = req.params;
     const formattedDate = `${day}/${month}/${year}`;
-    const appointments = await Appointment.find({ date: formattedDate });
+    const appointments = await Appointment.find({ date: formattedDate }).populate('user').populate('service').populate('stylist');
 
     if (appointments.length === 0) {
       return res.status(404).json({ message: 'No se encontraron citas para esta fecha' });
